@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC手册</title>
+    <style>
+        /* 基础样式重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "微软雅黑", sans-serif; line-height: 1.8; color: #333; background: #f8f9fa; }
+        
+        /* 页面容器：两栏布局 */
+        .container { display: flex; max-width: 1400px; margin: 0 auto; padding: 20px; gap: 30px; }
+        
+        /* 文章内容区 */
+        .article-content { flex: 1; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .article-content h1 { margin: 25px 0 15px; color: #222; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .article-content h2 { margin: 20px 0 12px; color: #333; border-left: 4px solid #4299e1; padding-left: 10px; }
+        .article-content h3 { margin: 18px 0 10px; color: #444; }
+        .article-content p { margin: 12px 0; text-indent: 2em; }
+        .article-content img { max-width: 100%; margin: 15px 0; border-radius: 4px; }
+        
+        /* 侧边目录栏 */
+        .sidebar-toc { width: 260px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 20px; height: fit-content; }
+        .sidebar-toc h4 { color: #222; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .toc-list { list-style: none; }
+        .toc-list li { margin: 10px 0; }
+        .toc-list a { text-decoration: none; color: #555; transition: all 0.3s; display: block; }
+        /* 标题层级缩进 */
+        .toc-level-1 { padding-left: 0; }
+        .toc-level-2 { padding-left: 15px; }
+        .toc-level-3 { padding-left: 30px; }
+        /* 滚动高亮样式 */
+        .toc-active { color: #4299e1 !important; font-weight: 600; }
+        
+        /* 响应式适配（手机端隐藏侧边栏，显示顶部目录按钮） */
+        .toc-btn { display: none; position: fixed; top: 10px; right: 10px; padding: 8px 12px; background: #4299e1; color: #fff; border: none; border-radius: 4px; cursor: pointer; z-index: 999; }
+        @media (max-width: 992px) {
+            .container { flex-direction: column; }
+            .sidebar-toc { width: 100%; position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(100%); transition: transform 0.3s; z-index: 998; overflow-y: auto; }
+            .sidebar-toc.show { transform: translateX(0); }
+            .toc-btn { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 手机端目录切换按钮 -->
+    <button class="toc-btn" onclick="toggleToc()">目录</button>
+
+    <div class="container">
+        <!-- 文章内容区（h1/h2/h3自动生成目录，需加唯一id） -->
+        <div class="article-content" id="article">
+            <h1 id="intro">1. 引言</h1>
+            <p>本文为示例博客内容，主要展示带侧边目录的页面效果。侧边目录会自动提取文章中的h1、h2、h3标题，生成可点击跳转的目录，同时滚动文章时会高亮当前所在章节，提升阅读体验。</p >
+            <p>这是随便添加的一段，测试一下效果而已</p >
+            <p>此类页面常见于技术博客（如CSDN、掘金）、文档网站等场景，核心逻辑是通过锚点链接实现跳转，结合JS滚动监听实现高亮，适配不同设备屏幕。</p >
+
+            <h2 id="core-principle">1.1 核心实现原理</h2>
+            <p>侧边目录的核心依赖3个关键技术点，无需复杂框架，纯HTML+CSS+JS即可实现，新手也能快速上手。</p >
+            <h3 id="anchor-link">1.1.1 锚点链接定位</h3>
+            <p>给文章标题添加唯一id属性，目录中通过a标签的href属性指向对应id（格式：#标题id），点击即可跳转到对应标题位置，这是目录跳转的基础。</p >
+            <h3 id="scroll-monitor">1.1.2 滚动监听高亮</h3>
+            <p>通过JS监听页面滚动事件，判断当前可视区域内最顶部的标题，给对应目录项添加高亮样式，让读者明确当前阅读位置。</p >
+            <h3 id="layout-style">1.1.3 两栏布局与适配</h3>
+            <p>用CSS flex实现PC端两栏布局，侧边目录通过position: sticky固定在视口；手机端隐藏侧边栏，添加切换按钮，点击显示/隐藏目录，保证移动端体验。</p >
+
+            <h2 id="implement-step">1.2 具体实现步骤</h2>
+            <p>以下分步骤拆解实现流程，从页面结构搭建到JS功能开发，每一步都有明确目标，复制代码即可复用。</p >
+            <h3 id="html-structure">1.2.1 搭建HTML基础结构</h3>
+            <p>划分3个核心模块：手机端目录切换按钮、文章内容容器、侧边目录容器，其中目录容器初始为空，后续通过JS自动填充。</p >
+            <h3 id="css-style">1.2.2 编写CSS样式</h3>
+            <p>完成基础样式重置、PC端两栏布局、目录层级缩进、高亮样式定义，以及移动端响应式适配，确保页面美观且适配不同设备。</p >
+            <h3 id="js-function">1.2.3 开发JS核心功能</h3>
+            <p>实现3个核心功能：自动提取文章标题生成目录项、点击目录平滑跳转到对应标题、监听滚动高亮当前目录项，同时添加手机端目录切换逻辑。</p >
+
+            <h1 id="matters">2. 注意事项</h1>
+            <p>实际使用时需关注2个关键细节，避免功能异常或体验不佳。</p >
+            <h2 id="title-id">2.1 标题id必须唯一</h2>
+            <p>每个h1/h2/h3标题的id属性不能重复，否则锚点跳转会失效，建议按“章节-小节”格式命名（如intro、core-principle），简洁且唯一。</p >
+            <h2 id="content-length">2.2 文章内容需足够长</h2>
+            <p>若文章内容过短，页面无法滚动，滚动监听高亮功能会无法触发，建议保证文章有足够长度，或测试时适当增加示例内容。</p >
+        </div>
+
+        <!-- 侧边目录容器（JS自动生成内容） -->
+        <div class="sidebar-toc" id="sidebarToc">
+            <h4>文章目录</h4>
+            <ul class="toc-list" id="tocList"></ul>
+        </div>
+    </div>
+
+    <script>
+        // 1. 自动生成侧边目录
+        function generateToc() {
+            const article = document.getElementById('article');
+            const tocList = document.getElementById('tocList');
+            // 提取文章中所有h1/h2/h3标题（按页面顺序）
+            const headings = article.querySelectorAll('h1, h2, h3');
+            
+            headings.forEach(heading => {
+                const title = heading.textContent;
+                const id = heading.id;
+                // 获取标题层级（h1=1，h2=2，h3=3）
+                const level = parseInt(heading.tagName.substring(1));
+                
+                // 创建目录项li和a标签
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${id}`;
+                a.textContent = title;
+                // 添加层级类名（用于缩进）
+                a.classList.add(`toc-level-${level}`);
+                
+                li.appendChild(a);
+                tocList.appendChild(li);
+            });
+        }
+
+        // 2. 点击目录平滑跳转
+        function smoothScroll() {
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault(); // 阻止默认跳转
+                    const targetId = link.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    // 平滑滚动到目标标题（顶部留20px间距）
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // 手机端点击目录后隐藏侧边栏
+                    if (window.innerWidth <= 992) {
+                        toggleToc();
+                    }
+                });
+            });
+        }
+
+        // 3. 滚动监听，高亮当前目录
+        function highlightTocOnScroll() {
+            const headings = document.querySelectorAll('#article h1, #article h2, #article h3');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            
+            window.addEventListener('scroll', () => {
+                let currentActiveIndex = 0;
+                // 遍历标题，找到当前可视区域最顶部的标题
+                headings.forEach((heading, index) => {
+                    const headingTop = heading.getBoundingClientRect().top;
+                    // 标题顶部距离视口顶部小于50px，视为当前章节
+                    if (headingTop < 50) {
+                        currentActiveIndex = index;
+                    }
+                });
+                
+                // 移除所有目录高亮，给当前章节添加高亮
+                tocLinks.forEach(link => link.classList.remove('toc-active'));
+                tocLinks[currentActiveIndex].classList.add('toc-active');
+            });
+        }
+
+        // 4. 手机端切换目录显示/隐藏
+        function toggleToc() {
+            const sidebarToc = document.getElementById('sidebarToc');
+            sidebarToc.classList.toggle('show');
+        }
+
+        // 页面加载完成后执行所有功能
+        window.onload = function() {
+            generateToc();
+            smoothScroll();
+            highlightTocOnScroll();
+        };
+    </script>
+</body>
+</html>
